@@ -1,0 +1,19 @@
+<div class="jumbotron bg-dark text-light">
+    <span>Mongo Scraper</span>
+    <button id="scrape-btn">Scrape New Articles</button>
+    <a href="./articles">View Saved Articles</a>
+</div>
+<div id="scraped-articles">
+    {{#each dbArticle}}
+    {{#unless saved}}
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{title}}</h5>
+            <p class="card-text">{{summary}}</p>
+            <a href="{{link}}">{{link}}</a>
+            <button class="change-saved" data-id="{{_id}}" data-newsaved="true">Save article</button>
+        </div>
+    </div>
+    {{/unless}}
+    {{/each}}
+</div>

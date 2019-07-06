@@ -1,99 +1,162 @@
+// If you want to earn complete credit for your work, you must use all five of these packages in your assignment.
 var express = require("express");
-var logger = require("morgan");
+var exphbs = require("express-handlebars");
 var mongoose = require("mongoose");
-var MONGODDB_URI =
-  process.env.MONGODDB_URI || "mongodb://localhost/mongoHeadlines";
-
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
-var axios = require("axios");
 var cheerio = require("cheerio");
+var axios = require("axios");
 
-// Require all models
 var db = require("./models");
 
-var PORT = 3000;
+var PORT = process.env.PORT || 3000;
 
-// Initialize Express
-var app = express();
-
-// Configure middleware
-
-// Use morgan logger for logging requests
-app.use(logger("dev"));
-// Parse request body as JSON
+var app = express(); // initializes Express
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-// Make public a static folder
 app.use(express.static("public"));
 
-// Connect to the Mongo DB
-mongoose.connect(MONGODDB_URI);
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
 
-// Routes
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoScraper";
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true }); //
 
-// A GET route for scraping the echoJS website
-app.get("/scrape", function(req, res) {
-  // First, we grab the body of the html with axios
-  axios.get("http://www.echojs.com/").then(function(response) {
-    // Then, we load that into cheerio and save it to $ for a shorthand selector
-    var $ = cheerio.load(response.data);
-
-    // Now, we grab every h2 within an article tag, and do the following:
-    $("article h2").each(function(i, element) {
-      // Save an empty result object
-      var result = {};
-
-      // Add the text and href of every link, and save them as properties of the result object
-      result.title = $(this)
-        .children("a")
-        .text();
-      result.link = $(this)
-        .children("a")
-        .attr("href");
-
-      // Create a new Article using the `result` object built from scraping
-      db.Article.create(result)
-        .then(function(dbArticle) {
-          // View the added result in the console
-          console.log(dbArticle);
-        })
-        .catch(function(err) {
-          // If an error occurred, log it
-          console.log(err);
-        });
+app.get("/", function(req, res) {
+  db.Article.find({})
+    .then(function(dbArticle) {
+      res.render("index", { dbArticle });
+      // res.json(dbArticle);
+    })
+    .catch(function(err) {
+      res.json(err);
     });
-
-    // Send a message to the client
-    res.send("Scrape Complete");
-  });
 });
 
-// Route for getting all Articles from the db
-app.get("/articles", function(req, res) {
-  // TODO: Finish the route so it grabs all of the articles
+app.get("/scrape", function(req, res) {
+  // route for scraping bbc news
+  axios
+    .get("https://www.bbc.com/sport/football/womens")
+    .then(function(response) {
+      var $ = cheerio.load(response.data);
+
+      $(".lakeside__content").each(function(i, element) {
+        var result = {};
+        result.title = $(element)
+          .children()
+          .children()
+          .children("span")
+          .text();
+        result.summary =
+          $(element)
+            .children("p")
+            .text() || "N/A";
+        result.link = $(element)
+          .children()
+          .children()
+          .attr("href");
+        result.saved = false;
+        if (!result.link.includes("https://www.bbc.co")) {
+          result.link = "https://www.bbc.com" + result.link;
+        }
+        console.log(result);
+
+        // db.Article.create(result).then(function (dbArticle) {
+        db.Article.update(
+          { link: result.link },
+          {
+            $set: {
+              title: result.title,
+              summary: result.summary,
+              link: result.link,
+              saved: result.saved
+            }
+          },
+          { upsert: true }
+        )
+          .then(function(dbArticle) {
+            console.log(dbArticle);
+          })
+          .catch(function(err) {
+            console.log(err);
+          });
+      });
+
+      res.send("Scrape completed");
+    });
 });
 
-// Route for grabbing a specific Article by id, populate it with it's note
-app.get("/articles/:id", function(req, res) {
-  // TODO
-  // ====
-  // Finish the route so it finds one article using the req.params.id,
-  // and run the populate method with "note",
-  // then responds with the article with the note included
-});
-
-// Route for saving/updating an Article's associated Note
 app.post("/articles/:id", function(req, res) {
-  // TODO
-  // ====
-  // save the new note that gets posted to the Notes collection
-  // then find an article from the req.params.id
-  // and update it's "note" property with the _id of the new note
+  // route for saving specified article
+  console.log("body:");
+  console.log(req.body.saved);
+  db.Article.findOneAndUpdate(
+    { _id: req.params.id },
+    { $set: { saved: req.body.saved } }
+  )
+    .then(function(dbArticle) {
+      console.log("dbArticle:");
+      console.log(dbArticle);
+      res.json(dbArticle);
+      //make this work!!! I believe in you!!!
+    })
+    .catch(function(err) {
+      console.log(err);
+    });
 });
 
-// Start the server
+app.get("/articles", function(req, res) {
+  // route for getting all saved articles
+  db.Article.find({})
+    .then(function(dbArticle) {
+      res.render("articles", { dbArticle });
+      //res.json(dbArticle);
+    })
+    .catch(function(err) {
+      res.json(err);
+    });
+});
+
+app.get("/note", function(req, res) {
+  // route for getting all saved articles
+  db.Article.find({})
+    .then(function(dbArticle) {
+      res.render("articles", { dbArticle });
+      //res.json(dbArticle);
+    })
+    .catch(function(err) {
+      res.json(err);
+    });
+});
+// app.get("/article/:id", function(req, res) {
+//   // route for getting one article by id and its notes
+//   db.Article.findOne({ _id: req.params.id })
+//     .populate("note")
+//     .then(function(dbArticle) {
+//       res.json(dbArticle);
+//     })
+//     .catch(function(err) {
+//       res.json(err);
+//     });
+// });
+
+app.post("/note/:id", function(req, res) {
+  // route for saving/updating note on specified article
+  db.Note.create(req.body)
+    .then(function(dbNote) {
+      console.log(dbNote);
+      return db.Article.findOneAndUpdate(
+        { _id: req.params.id },
+        { note: dbNote._id },
+        { new: true }
+      );
+    })
+    .then(function(dbArticle) {
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      res.json(err);
+    });
+});
+
 app.listen(PORT, function() {
   console.log("App running on port " + PORT + "!");
 });
