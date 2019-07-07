@@ -33,55 +33,53 @@ app.get("/", function(req, res) {
 
 app.get("/scrape", function(req, res) {
   // route for scraping bbc news
-  axios
-    .get("https://www.bbc.com/sport/football/womens")
-    .then(function(response) {
-      var $ = cheerio.load(response.data);
+  axios.get("https://www.bbc.com/sport/football/mens").then(function(response) {
+    var $ = cheerio.load(response.data);
 
-      $(".lakeside__content").each(function(i, element) {
-        var result = {};
-        result.title = $(element)
-          .children()
-          .children()
-          .children("span")
-          .text();
-        result.summary =
-          $(element)
-            .children("p")
-            .text() || "N/A";
-        result.link = $(element)
-          .children()
-          .children()
-          .attr("href");
-        result.saved = false;
-        if (!result.link.includes("https://www.bbc.co")) {
-          result.link = "https://www.bbc.com" + result.link;
-        }
-        console.log(result);
+    $(".lakeside__content").each(function(i, element) {
+      var result = {};
+      result.title = $(element)
+        .children()
+        .children()
+        .children("span")
+        .text();
+      result.summary =
+        $(element)
+          .children("p")
+          .text() || "N/A";
+      result.link = $(element)
+        .children()
+        .children()
+        .attr("href");
+      result.saved = false;
+      if (!result.link.includes("https://www.bbc.co")) {
+        result.link = "https://www.bbc.com" + result.link;
+      }
+      console.log(result);
 
-        // db.Article.create(result).then(function (dbArticle) {
-        db.Article.update(
-          { link: result.link },
-          {
-            $set: {
-              title: result.title,
-              summary: result.summary,
-              link: result.link,
-              saved: result.saved
-            }
-          },
-          { upsert: true }
-        )
-          .then(function(dbArticle) {
-            console.log(dbArticle);
-          })
-          .catch(function(err) {
-            console.log(err);
-          });
-      });
-
-      res.send("Scrape completed");
+      // db.Article.create(result).then(function (dbArticle) {
+      db.Article.update(
+        { link: result.link },
+        {
+          $set: {
+            title: result.title,
+            summary: result.summary,
+            link: result.link,
+            saved: result.saved
+          }
+        },
+        { upsert: true }
+      )
+        .then(function(dbArticle) {
+          console.log(dbArticle);
+        })
+        .catch(function(err) {
+          console.log(err);
+        });
     });
+
+    res.send("Scrape completed");
+  });
 });
 
 app.post("/articles/:id", function(req, res) {
