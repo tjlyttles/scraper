@@ -1,6 +1,7 @@
 <div class="jumbotron bg-dark text-light">
     <span>Saved Articles</span>
-    <a href="/" />View Scraped Articles</a> </div>
+    <a href="./">View Scraped Articles</a>
+</div>
 <div id="saved-articles">
     {{#each dbArticle}}
     {{#if saved}}
@@ -9,13 +10,16 @@
             <h5 class="card-title">{{title}}</h5>
             <p class="card-text">{{summary}}</p>
             <a href="{{link}}">{{link}}</a>
-            <button type="button" data-toggle="modal" data-target="#exampleModal" id="view-notes" data-id="{{_id}}">View
+
+            <button data-toggle="modal" data-target="#exampleModal" class="view-notes" data-id="{{_id}}">View
                 notes</button>
-            <button class="change-saved" data-id="{{_id}}" data-newsaved="false">Delete article</button>
+            <button class="toggle-saved" data-id="{{_id}}" data-newsaved="false">Delete article</button>
         </div>
     </div>
     {{/if}}
     {{/each}}
+
+
 </div>
 
 {{!-- notes modal --}}
@@ -24,17 +28,23 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <h5 class="modal-title" id="note-title">Notes for article {$("#save-note").attr("data-id")}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <textarea id='bodyinput' name='body'></textarea>
+            <div id="article-notes">
+
+            </div>
+            <div>
+                <form>
+                    <div class="form-group">
+                        <textarea class="form-control" id="notes-form" rows="3"></textarea>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" id="save-note" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-primary" id="save-note" data-id="">Save note</button>
             </div>
         </div>
     </div>
