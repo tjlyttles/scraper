@@ -3,7 +3,7 @@ $("#scrape-btn").on("click", function(event) {
   // scrape articles
   setTimeout(function() {
     location.reload();
-  }, 7000);
+  }, 5000);
   $.ajax({
     method: "GET",
     url: "/scrape"
