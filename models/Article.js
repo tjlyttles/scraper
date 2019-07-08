@@ -18,6 +18,16 @@ var ArticleSchema = new Schema({
     type: Boolean,
     default: false
   },
+  image: {
+    src: {
+      type: String,
+      required: true
+    },
+    alt: {
+      type: String,
+      required: true
+    }
+  },
   notes: [
     {
       type: Schema.Types.ObjectId,

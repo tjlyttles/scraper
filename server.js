@@ -18,7 +18,7 @@ app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
 var MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+  process.env.MONGODB_URI || "mongodb://localhost/mongoScraperImg";
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true }); //
 
 app.get("/", function(req, res) {
@@ -39,21 +39,40 @@ app.get("/scrape", function(req, res) {
     .then(function(response) {
       var $ = cheerio.load(response.data);
 
-      $(".lakeside__content").each(function(i, element) {
+      $(".gel-layout_item, article").each(function(i, element) {
         var result = {};
         result.title = $(element)
           .children()
           .children()
+          .children()
+          .children()
           .children("span")
           .text();
+        console.log(result.title);
         result.summary =
           $(element)
+            .children()
+            .children()
             .children("p")
             .text() || "N/A";
         result.link = $(element)
           .children()
           .children()
+          .children()
+          .children("a")
           .attr("href");
+        result.src = $(element)
+          .children()
+          .children()
+          .children()
+          .children("img")
+          .attr("src");
+        result.alt = $(element)
+          .children()
+          .children()
+          .children()
+          .children("img")
+          .attr("alt");
         if (!result.link.includes("https://www.bbc.co")) {
           result.link = "https://www.bbc.com" + result.link;
         }
@@ -61,13 +80,17 @@ app.get("/scrape", function(req, res) {
         // console.log(result);
 
         // db.Article.create(result).then(function (dbArticle) {
-        db.Article.update(
+        db.Article.updateMany(
           { link: result.link },
           {
             $set: {
               title: result.title,
               summary: result.summary,
               link: result.link,
+              image: {
+                src: result.src,
+                alt: result.alt
+              },
               saved: false
             }
           },

@@ -1,5 +1,5 @@
 <div class="jumbotron bg-dark text-light">
-    <span>Mongo Scraper</span>
+    <h1>Mongo Scraper</h1>
     <button id="scrape-btn">Scrape New Articles</button>
     <a href="./articles">View Saved Articles</a>
 </div>
@@ -9,6 +9,7 @@
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">{{title}}</h5>
+            <img src="{{image.src}}" alt="{{image.alt}}">
             <p class="card-text">{{summary}}</p>
             <a href="{{link}}">{{link}}</a>
             <button class="toggle-saved" data-id="{{_id}}" data-newsaved="true">Save article</button>
