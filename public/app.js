@@ -77,20 +77,23 @@ $(".view-notes").on("click", function(event) {
 $(document).on("click", "#save-note", function() {
   // $("#save-note").on("click", function (event) {
   var thisId = $(this).attr("data-id");
+  if (!$("#notes-form").val()) {
+    alert("No note was entered");
+  } else {
+    $.ajax({
+      method: "POST",
+      url: "/notes/" + thisId,
+      data: {
+        text: $("#notes-form").val()
+      }
+    }).then(function(data) {
+      console.log("savenote");
+      console.log(data);
+      refreshNotes(data);
+    });
 
-  $.ajax({
-    method: "POST",
-    url: "/notes/" + thisId,
-    data: {
-      text: $("#notes-form").val()
-    }
-  }).then(function(data) {
-    console.log("savenote");
-    console.log(data);
-    refreshNotes(data);
-  });
-
-  $("#notes-form").val("");
+    $("#notes-form").val("");
+  }
 });
 
 $("#article-notes").on("click", ".delete-note", function() {
