@@ -1,13 +1,13 @@
 //$(document).on("click", "button.delete-note", deleteNote);
 $("#scrape-btn").on("click", function(event) {
   // scrape articles
+  setTimeout(function() {
+    location.reload();
+  }, 7000);
   $.ajax({
     method: "GET",
     url: "/scrape"
-  }).then(function(data) {
-    //console.log(data);
-    location.reload();
-  });
+  }).then(function(data) {});
 });
 
 $(".toggle-saved").on("click", function(event) {
