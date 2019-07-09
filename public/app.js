@@ -2,9 +2,9 @@
 $("#scrape-btn").on("click", function(event) {
   // scrape articles
   console.log("scraped");
-  // setTimeout(function() {
-  //   location.reload();
-  // }, 5000);
+  setTimeout(function() {
+    location.reload();
+  }, 4000);
   $.ajax({
     method: "GET",
     url: "/scrape"
