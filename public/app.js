@@ -1,9 +1,10 @@
 //$(document).on("click", "button.delete-note", deleteNote);
 $("#scrape-btn").on("click", function(event) {
   // scrape articles
-  setTimeout(function() {
-    location.reload();
-  }, 5000);
+  console.log("scraped");
+  // setTimeout(function() {
+  //   location.reload();
+  // }, 5000);
   $.ajax({
     method: "GET",
     url: "/scrape"

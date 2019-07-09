@@ -1,20 +1,33 @@
 <div class="jumbotron bg-dark text-light">
-    <h1>Mongo Scraper</h1>
+    <h1>IGN Game News Scraper</h1>
     <button id="scrape-btn">Scrape New Articles</button>
     <a href="./articles">View Saved Articles</a>
 </div>
 <div id="scraped-articles">
     {{#each dbArticle}}
     {{#unless saved}}
+
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">{{title}}</h5>
-            <img src="{{image.src}}" alt="{{image.alt}}">
-            <p class="card-text">{{summary}}</p>
-            <a href="{{link}}">{{link}}</a>
-            <button class="toggle-saved" data-id="{{_id}}" data-newsaved="true">Save article</button>
+            <a href="{{link}}">
+                <h5 class="card-title">{{title}}</h5>
+            </a>
+
+            <div style="float: left">
+
+                <a href="{{link}}"><img src="{{image.src}}" alt="{{image.alt}}" data-original="{{original}}"></img></a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p>{{summary}}</p>
+                </div>
+            </div>
+            <button type="button" class="toggle-saved btn btn-dark" data-id="{{_id}}" data-newsaved="true">Save
+                article</button>
+
         </div>
     </div>
+
     {{/unless}}
     {{/each}}
 </div>

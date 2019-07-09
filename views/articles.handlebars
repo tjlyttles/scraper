@@ -1,5 +1,5 @@
 <div class="jumbotron bg-dark text-light">
-    <span>Saved Articles</span>
+    <h1>Saved Articles</h1>
     <a href="./">View Scraped Articles</a>
 </div>
 <div id="saved-articles">
@@ -7,14 +7,24 @@
     {{#if saved}}
     <div class="card">
         <div class="card-body">
-            <h5 class="card-title">{{title}}</h5>
-            <img src="{{image.src}}" alt="{{image.alt}}">
-            <p class="card-text">{{summary}}</p>
-            <a href="{{link}}">{{link}}</a>
+            <a href="{{link}}">
+                <h5 class="card-title">{{title}}</h5>
+            </a>
 
-            <button data-toggle="modal" data-target="#exampleModal" class="view-notes" data-id="{{_id}}">View
+            <div style="float: left">
+
+                <a href="{{link}}"><img src="{{image.src}}" alt="{{image.alt}}" data-original="{{original}}"></img></a>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <p>{{summary}}</p>
+                </div>
+            </div>
+            <button class="view-notes btn btn-success" data-toggle="modal" data-target="#exampleModal"
+                data-id="{{_id}}">View
                 notes</button>
-            <button class="toggle-saved" data-id="{{_id}}" data-newsaved="false">Delete article</button>
+            <button type="button" class="toggle-saved btn btn-danger" data-id="{{_id}}" data-newsaved="false">Delete
+                article</button>
         </div>
     </div>
     {{/if}}

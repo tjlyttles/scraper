@@ -17,8 +17,7 @@ app.use(express.static("public"));
 app.engine("handlebars", exphbs({ defaultLayout: "main" }));
 app.set("view engine", "handlebars");
 
-var MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost/mongoScraperImg";
+var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoIgn";
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true }); //
 
 app.get("/", function(req, res) {
@@ -34,77 +33,55 @@ app.get("/", function(req, res) {
 
 app.get("/scrape", function(req, res) {
   // route for scraping bbc news articles
-  axios
-    .get("https://www.bbc.com/sport/football/womens")
-    .then(function(response) {
-      var $ = cheerio.load(response.data);
+  axios.get("https://www.ign.com/articles?tags=news").then(function(response) {
+    var $ = cheerio.load(response.data);
 
-      $(".gel-layout_item, article").each(function(i, element) {
-        var result = {};
-        result.title = $(element)
-          .children()
-          .children()
-          .children()
-          .children()
-          .children("span")
-          .text();
-        console.log(result.title);
-        result.summary =
-          $(element)
-            .children()
-            .children()
-            .children("p")
-            .text() || "N/A";
-        result.link = $(element)
-          .children()
-          .children()
-          .children()
-          .children("a")
-          .attr("href");
-        result.src = $(element)
-          .children()
-          .children()
-          .children()
-          .children("img")
-          .attr("src");
-        result.alt = $(element)
-          .children()
-          .children()
-          .children()
-          .children("img")
-          .attr("alt");
-        if (!result.link.includes("https://www.bbc.co")) {
-          result.link = "https://www.bbc.com" + result.link;
-        }
-        result.saved = false;
-        // console.log(result);
+    $(".listElmnt").each(function(i, element) {
+      var result = {};
+      result.src = $(element)
+        .children()
+        .children()
+        .children("img")
+        .attr("src");
+      result.alt = $(element)
+        .children()
+        .children()
+        .children("img")
+        .attr("alt");
+      result.link = $(element)
+        .children()
+        .children("a")
+        .attr("href");
+      result.summary = $(element)
+        .children()
+        .children("p")
+        .text();
 
-        // db.Article.create(result).then(function (dbArticle) {
-        db.Article.updateMany(
-          { link: result.link },
-          {
-            $set: {
-              title: result.title,
-              summary: result.summary,
-              link: result.link,
-              image: {
-                src: result.src,
-                alt: result.alt
-              },
-              saved: false
-            }
-          },
-          { upsert: true }
-        )
-          .then(function(dbArticle) {
-            console.log(dbArticle);
-          })
-          .catch(function(err) {
-            console.log(err);
-          });
-      });
-      res.send("Scrape completed");
+      result.saved = false;
+
+      db.Article.updateMany(
+        { title: result.alt },
+        {
+          $set: {
+            image: { src: result.src, alt: result.alt },
+            title: result.alt,
+            original: result.src,
+            summary: result.summary,
+            link: result.link,
+            saved: false
+          }
+        },
+        { upsert: true }
+      )
+        .then(function(dbArticle) {
+          console.log(dbArticle);
+        })
+        .catch(function(err) {
+          console.log(err);
+        });
     });
+    res.send("Scrape completed");
+  });
 });
 
 app.post("/articles/:id", function(req, res) {
@@ -121,7 +98,6 @@ app.post("/articles/:id", function(req, res) {
       console.log(err);
     });
 });
-//////// if unsaved, delete all associated notes???
 
 app.get("/articles", function(req, res) {
   // route for getting all saved articles
